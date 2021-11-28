@@ -6,7 +6,8 @@ import colormath.color_conversions
 class Color:
     chromatic_adaptation_matrices = {
         '2': {
-            'D50': {'X_n': 0.964212, 'Y_n': 1, 'Z_n': 0.825188},
+            #'D50': {'X_n': 0.964212, 'Y_n': 1, 'Z_n': 0.825188},
+            'D50': {'X_n': 0.96422, 'Y_n': 1, 'Z_n': 0.82521},
             'D65': {'X_n': 0.950489, 'Y_n': 1, 'Z_n': 1.088840},
         },
     }
@@ -66,8 +67,8 @@ class Color:
         else:
             raise ValueError(f'illuminant out of range {cls.chromatic_adaptation_matrices[observer].keys()}: {illuminant}')
 
-        epsilon = 216 / 24389
-        kappa = 24389 / 27
+        epsilon = 0.008856 # 216 / 24389
+        kappa = 903.3 # 24389 / 27
 
         L_n = L * 100
         f_y = (L_n + 16) / 116
@@ -115,8 +116,8 @@ class Color:
         Z_n = self.chromatic_adaptation_matrices[self.observer][self.illuminant]['Z_n']
         
         def _f(t):
-            epsilon = 216 / 24389
-            kappa = 24389 / 27
+            epsilon = 0.008856 # 216 / 24389
+            kappa = 903.3 # 24389 / 27
             if t > epsilon:
                 return t ** (1 / 3)
             else:
@@ -130,6 +131,8 @@ class Color:
             return (L / 100, (a + 128) / 256, (b + 128) / 256)
         elif format == 'tuple_upscale':
             return (L, a, b)
+        elif format == 'numpy_upscale':
+            return numpy.array([L, a, b])
         else:
             raise ValueError(f'format out of range {{tuple, tuple_upscale}}: {format}')
 

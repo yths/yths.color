@@ -2,6 +2,7 @@ import unittest
 
 import pycoli.color
 
+
 class ColorTest(unittest.TestCase):
     def test_Lab_XYZ_conversion(self):
         for illuminant in ['D50', 'D65']:
