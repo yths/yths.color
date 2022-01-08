@@ -34,6 +34,38 @@ def difference(color_a, color_b, mode='Delta E (CIE 1976)', substrate='graphic a
         K_H = 1
 
         return ((dL / (K_L * S_L) ** 2) + (dC / (K_C * S_C) ** 2) + (dH / (K_H * S_H) ** 2)) ** 0.5
+    elif mode == 'Delta E (CIE 2000)':
+        a_L, a_a, a_b = color_a.get_Lab(format='tuple_upscale')
+        b_L, b_a, b_b = color_b.get_Lab(format='tuple_upscale')
+
+        L_bar_prime = (a_L + b_L) / 2
+        a_C = (a_a ** 2 + a_b ** 2) ** 0.5
+        b_C = (b_a ** 2 + b_b ** 2) ** 0.5
+        C_bar = (a_C + b_C) / 2
+        G = 0.5 * (1 - (C_bar ** 7 / (C_bar ** 7 + 25 ** 7)) ** 0.5)
+        a_a_prime = a_a * (1 + G)
+        b_a_prime = b_a * (1 + G)
+        a_C_prime = (a_a_prime ** 2 + a_b ** 2) ** 0.5
+        b_C_prime = (b_a_prime ** 2 + b_b ** 2) ** 0.5
+
+        def _h(a, b):
+            if b / a >= 0:
+                return numpy.degrees(numpy.arctan(b / a))
+            else:
+                return numpy.degrees(numpy.arctan(b / a)) + 360
+
+        def _H(a_a_prime, a_b, b_a_prime, b_b):
+            if numpy.abs(_h(a_a_prime, a_b) - _h(b_a_prime, b_b)) > 180:
+                return (_h(a_a_prime, a_b) + _h(b_a_prime, b_b) + 360) / 2
+            else:
+                return (_h(a_a_prime, a_b) + _h(b_a_prime, b_b)) / 2
+
+        H_bar_prime = _H(a_a_prime, a_b, b_a_prime, b_b)
+        T = 1 - 0.17 * numpy.degrees(numpy.cos(numpy.radians(H_bar_prime - 30))) \
+              + 0.24 * numpy.degrees(numpy.cos(numpy.radians(2 * H_bar_prime))) \
+              + 0.32 * numpy.degrees(numpy.cos(numpy.radians(3 * H_bar_prime + 6))) \
+              - 0.20 * numpy.degrees(numpy.cos(numpy.radians(4 * H_bar_prime - 63)))
+
     else:
         raise ValueError(f'mode out of range {{Delta E (CIE 1976), Delta E (CIE 1994)}}: {mode}')
 
